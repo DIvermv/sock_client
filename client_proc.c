@@ -4,12 +4,13 @@ int TCP_client(int port, char* message)
 {
 
    // char message[] = "Test message\n";
-    char buf[sizeof(message)];
+    char buf[1536];
 
     int sock;
     struct sockaddr_in addr;
 
     sock = socket(AF_INET, SOCK_STREAM, 0);// IP4 TCP сокет
+   // sock = socket(AF_INET,  SOCK_DGRAM, 0);// IP4 UDP присоединенный сокет
     if(sock < 0)
     {
         perror("socket");
@@ -24,11 +25,16 @@ int TCP_client(int port, char* message)
         perror("connect");
         exit(2);
     }
-
-    send(sock, message, sizeof(message), 0);//отправляем сообщение
-    recv(sock, buf, sizeof(message), 0); // получаем сообщение
+	 for(int t=0;t<100;t++)
+	 {
+    if((send(sock, message, strlen(message), 0))!=sizeof(message))//отправляем сообщение
+	    perror("send");
+    printf("send:%s size: %ld number %i\n",message,strlen(message), t);
+    //sleep(1);
+    recv(sock, buf, strlen(message), 0); // получаем сообщение
     
-    printf("%s\n",buf);
+    printf("receive: %s\n",buf);
+	 }
     close(sock);
     return 0;
 }
@@ -37,6 +43,9 @@ int UDP_client(int port, char *message)
 
     int sock;
     struct sockaddr_in addr;
+    char buf[1024];
+    int bytes_read;
+    socklen_t addrlen;
 
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if(sock < 0)
@@ -45,11 +54,24 @@ int UDP_client(int port, char *message)
         exit(1);
     }
 
+    printf(" send %s\n", message); 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-    sendto(sock, message, sizeof(message), 0, (struct sockaddr *)&addr, sizeof(addr));
+    for( int i=0;i<20;i++)
+    {
+    sendto(sock, message, strlen(message), 0, (struct sockaddr *)&addr, sizeof(addr));
+    close(sock);
 
+      while(1)
+     {
+         bytes_read = recvfrom(sock, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
+         buf[bytes_read] = '\0';
+         printf("receive:%i  %s\n",bytes_read,buf);
+         if(bytes_read>0)
+		 break;
+     }
+    }
     close(sock);
     return 0;
 }
