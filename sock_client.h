@@ -9,4 +9,5 @@
 #include <netinet/in.h>
 int TCP_client(int port, char *message);
 int UDP_client(int port, char *message);
+int UDP_con_client(int port, char *message);
 #endif
