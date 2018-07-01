@@ -25,14 +25,15 @@ int TCP_client(int port, char* message)
         perror("connect");
         exit(2);
     }
-	 for(int t=0;t<100;t++)
+	 for(int t=0;t<10;t++)
 	 {
-    if((send(sock, message, strlen(message), 0))!=sizeof(message))//отправляем сообщение
+	char  temp[1536];
+        sprintf(temp,"%s %i\n",message,t);	
+    send(sock, temp, strlen(temp), 0);//отправляем сообщение
 	    perror("send");
-    printf("send:%s size: %ld number %i\n",message,strlen(message), t);
-    //sleep(1);
-    recv(sock, buf, strlen(message), 0); // получаем сообщение
-    
+   // printf("send:%s size: %ld number %i\n",message,strlen(message), t);
+   int read_bytes=recv(sock, buf, 1536, 0); // получаем сообщение
+    buf[read_bytes] = '\0';
     printf("receive: %s\n",buf);
 	 }
     close(sock);
@@ -54,19 +55,25 @@ int UDP_client(int port, char *message)
         exit(1);
     }
 
-    printf(" send %s\n", message); 
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+   // if(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
+   connect(sock, (struct sockaddr *)&addr, sizeof(addr)); // подсоединяемся к серверу
+        perror("connect");
     for( int i=0;i<20;i++)
     {
-    sendto(sock, message, strlen(message), 0, (struct sockaddr *)&addr, sizeof(addr));
-    close(sock);
+   // sendto(sock, message, strlen(message), 0, (struct sockaddr *)&addr, sizeof(addr));
+    send(sock, message, strlen(message), 0);
+   // close(sock);
+        perror("sendto");
 
-      while(1)
+    //  while(1)
      {
-         bytes_read = recvfrom(sock, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
-         buf[bytes_read] = '\0';
+        // bytes_read = recvfrom(sock, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
+         bytes_read = recv(sock, buf, 1024, 0);
+         perror("recvfrom");
+      	 buf[bytes_read] = '\0';
          printf("receive:%i  %s\n",bytes_read,buf);
          if(bytes_read>0)
 		 break;
