@@ -42,14 +42,17 @@ int TCP_client(int port, char* message)
 	if(f_counter==5)
 		strcpy(temp,"close");
 
-    send(sock, temp, strlen(temp), 0);//отправляем сообщение
+   int send_bytes=send(sock, temp, strlen(temp), 0);
+  // if(send_bytes<=0)
+//	  close(sock) ;//отправляем сообщение
    // printf("send:%s size: %ld number %i\n",message,strlen(message), t);
    int read_bytes=recv(sock, buf, 1536, 0); // получаем сообщение
   state=atoi(buf);
     buf[read_bytes] = '\0';
     printf("current state: %s\n",buf);
+    sleep(1);
 	 }
-    close(sock);
+ //   close(sock);
     return 0;
 }
 int UDP_client(int port, char *message)
@@ -71,14 +74,11 @@ int UDP_client(int port, char *message)
     addr.sin_family = AF_INET;
     addr.sin_port = htons(port);
     addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-  // unsigned long  ip = (10<<24)+(0<<16)+(2<<8)+15;
-   // addr.sin_addr.s_addr = htonl(ip);
-   // if(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0)
    connect(sock, (struct sockaddr *)&addr, sizeof(addr)); // подсоединяемся к серверу
         perror("connect");
     for( int i=0;i<20;i++)
     {
-    send(sock, message, strlen(message), 0);
+        send(sock, message, strlen(message), 0);
         perror("sendto");
         // bytes_read = recvfrom(sock, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
          bytes_read = recv(sock, buf, 1024, 0);
