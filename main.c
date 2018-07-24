@@ -3,8 +3,8 @@
 
 int main (int argc, char *argv[])
 {
-Raw_client(3429, "Test message");
-printf("!parent end!");
- sleep(1000);    
+Raw_client(3433, "Test message");
+printf("!parent end!\n");
+// sleep(1000);    
 	return 0;
 }
