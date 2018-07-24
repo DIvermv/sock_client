@@ -3,7 +3,7 @@
 int Raw_client(int port, char *message)
 {
 
-    int sock;
+    int sock,sock_in;
     struct sockaddr_in addr;
     struct UdpHead UDP_Header;
     struct IPv4Head IP_Header;
@@ -14,12 +14,14 @@ int Raw_client(int port, char *message)
     u_short recv_length;
 
     sock = socket(AF_INET,SOCK_RAW,IPPROTO_RAW);
+    sock_in = socket(AF_INET,SOCK_RAW,IPPROTO_UDP);
+//   sock = socket(AF_INET,SOCK_DGRAM,0);
     if(sock < 0)
     {
         perror("socket");
         exit(1);
     }
-    addr.sin_family = AF_INET;
+   // addr.sin_family = AF_INET;
    // addr.sin_port = htons(port);
    // addr.sin_addr.s_addr = inet_addr("192.168.0.8");
    // addr.sin_addr.s_addr = inet_addr("8.8.8.8");
@@ -28,12 +30,11 @@ int Raw_client(int port, char *message)
    IP_Header.len=0;
    IP_Header.Id=0;
    IP_Header.offset=0;
-   IP_Header.TTL=128;
+   IP_Header.TTL=64;
    IP_Header.Next_Prot=17;// UDP
    IP_Header.CRC=0;
    IP_Header.sours_IP=inet_addr("192.168.0.8");
-   IP_Header.dest_IP=inet_addr("8.8.8.8");
-
+   IP_Header.dest_IP=inet_addr("192.168.0.8");
 
 
 
@@ -51,18 +52,25 @@ int Raw_client(int port, char *message)
 	   memcpy((void *)(buf+sizeof(IP_Header)),(void *)&UDP_Header,sizeof(UDP_Header));
            memcpy((void *)(buf+sizeof(IP_Header)+sizeof(UDP_Header)),(void *)mes,strlen(mes));
 	    sendto(sock, buf, sizeof(IP_Header)+sizeof(UDP_Header)+strlen(mes), 0, (struct sockaddr *)&addr, sizeof(addr));
+	   // sendto(sock, mes,strlen(mes), 0, (struct sockaddr *)&addr, sizeof(addr));
 	    perror("send");
-	    //  sleep(1);
-        // bytes_read = recvfrom(sock, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
+	     // sleep(1);
 
 	 /*получили пакет, нужно проверять его правильность*/
-			 for(int i=0;i<28;i++)
+			/* for(int i=0;i<28;i++)
 				 printf("%i=%X ",i,(unsigned char)buf[i]);
-				 printf("\n ");
+				 printf("\n ");*/
+	int re=1;
+	while(re)
+	{
+             addrlen=sizeof(addr);
+         bytes_read = recvfrom(sock_in, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
+	 //perror("read");
+	 printf("rec pac %X\n",buf[9]);
 	 if(buf[0]==0x45) // наверное IP
 	     if(buf[9]==0x11)// наверное UDP
 		 if((buf[22]==0x1E) && (buf[23]==0x61))// порт 7777
-		 {
+		 {re=0;
                    //perror("send");
       	           //buf[bytes_read] = '\0';
                    memcpy(&recv_length,buf+24,2);
@@ -70,6 +78,7 @@ int Raw_client(int port, char *message)
 	           memcpy(mes,buf+28,recv_length);// получен пакет вместе с IP-заголовком, поэтому надо отрезать IP - 20 байт и UDP - 8 байт
                    printf("receive:%i bytes: %s\n",recv_length,mes);
 		 }
+	}
     }
     close(sock);
     return 0;
