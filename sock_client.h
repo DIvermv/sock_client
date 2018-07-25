@@ -4,9 +4,18 @@
 #include <stdio.h>
 #include <string.h>
  #include <unistd.h>
-//#include <sys/types.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+
+//#include <net/sock.h>
+#include <linux/if_packet.h>
+#include <linux/if_ether.h>
+#include <linux/if_arp.h>
+
+
+
 #include <arpa/inet.h>
 int Raw_client(int port, char *message);
     struct UdpHead
@@ -28,6 +37,12 @@ int Raw_client(int port, char *message);
 	     u_short       CRC;
 	     uint32_t      sours_IP;
 	     uint32_t      dest_IP;
+     };
+struct EthHead
+     {
+	unsigned char   dest[6];     
+	unsigned char   sour[6];     
+        u_short   next_prot;
      };
 
 #endif
