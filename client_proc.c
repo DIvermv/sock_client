@@ -13,9 +13,12 @@ int Raw_client(int port, char *message)
     socklen_t addrlen;
     u_short recv_length;
 
-    sock = socket(AF_INET,SOCK_RAW,IPPROTO_RAW);
-    sock_in = socket(AF_INET,SOCK_RAW,IPPROTO_UDP);
+  //  sock = socket(AF_INET,SOCK_RAW,IPPROTO_RAW);
+    sock = socket(AF_INET,SOCK_RAW,IPPROTO_UDP);
 //   sock = socket(AF_INET,SOCK_DGRAM,0);
+    int v=1;
+    setsockopt(sock,IPPROTO_IP,IP_HDRINCL,&v,sizeof(v));
+
     if(sock < 0)
     {
         perror("socket");
@@ -64,7 +67,7 @@ int Raw_client(int port, char *message)
 	while(re)
 	{
              addrlen=sizeof(addr);
-         bytes_read = recvfrom(sock_in, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
+         bytes_read = recvfrom(sock, buf, 1024, 0, (struct sockaddr *) &addr, &addrlen);
 	 //perror("read");
 	 printf("rec pac %X\n",buf[9]);
 	 if(buf[0]==0x45) // наверное IP
