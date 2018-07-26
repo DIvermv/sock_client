@@ -18,6 +18,7 @@
 
 #include <arpa/inet.h>
 int Raw_client(int port, char *message);
+u_short checksum(u_short *buffer, int size);
     struct UdpHead
      {
       u_short src_port;// все поля по 2 байта

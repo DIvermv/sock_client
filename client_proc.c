@@ -27,7 +27,7 @@ int Raw_client(int port, char *message)
        unsigned char u[6]={0x08,0x00,0x27,0xC6,0xA4,0xFA};
        memcpy(EthHeader.dest,u,6);
        // EthHeader.dest={0x28,0x3B,0x82,0x6D,0x73,0xAF};
-       unsigned char u1[6]={0x2C,0x6F,0x9C,0x09,0x9E,0x9D}; 
+       unsigned char u1[6]={0x2C,0x6F,0xC9,0x09,0x9E,0x9D}; 
        memcpy(EthHeader.sour,u1,6);
        // EthHeader.sour={0x2C,0x6F,0x9C,0x09,0x9E,0x9D};
         EthHeader.next_prot=htons(0x0800);
@@ -36,13 +36,14 @@ int Raw_client(int port, char *message)
    IP_Header.Service=0;
    IP_Header.len=0;
    IP_Header.Id=0;
-   IP_Header.offset=0;
+   IP_Header.offset=64;
    IP_Header.TTL=64;
    IP_Header.Next_Prot=17;// UDP
    IP_Header.CRC=0;
    IP_Header.sours_IP=inet_addr("192.168.0.8");
    IP_Header.dest_IP=inet_addr("192.168.0.36");
-
+   
+     
 
 
     UDP_Header.dest_port = htons(port);// записываем номер порта получателя
@@ -57,6 +58,10 @@ int Raw_client(int port, char *message)
 	    sprintf(mes,"send message %i",i);// сформировали сообщение
            UDP_Header.length=htons(sizeof(UDP_Header)+strlen(mes));// посчитали размер нагрузки
 	   IP_Header.len=htons(sizeof(UDP_Header)+strlen(mes)+sizeof(IP_Header));// размер для IP
+           
+           IP_Header.CRC=checksum(&IP_Header,sizeof(IP_Header));// неправильно посчитана
+
+
 
 	   memcpy(buf,&IP_Header,sizeof(IP_Header));
 	   memcpy((void *)(buf+sizeof(IP_Header)),(void *)&UDP_Header,sizeof(UDP_Header));

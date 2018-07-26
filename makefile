@@ -1,2 +1,2 @@
 all:
-	gcc main.c client_proc.c -o Sock_Client
+	gcc main.c client_proc.c CRC.c -o Sock_Client
